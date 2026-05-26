@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chimaxx Global Calc</title>
+    <style>
+        * { 
+            margin: 0; padding: 0; 
+            font-family: 'Poppins', sans-serif; 
+            box-sizing: border-box; 
+        }
+
+        body {
+            width: 100%; height: 100vh;
+            background: linear-gradient(45deg, #0f2027, #203a43, #2c5364);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+
+        .calculator {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px; border-radius: 30px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            width: 100%; max-width: 350px;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+
+        .display input {
+            width: 100%; height: 60px;
+            background: transparent; border: none; outline: none;
+            text-align: right; color: #fff; font-size: 32px; padding: 0 5px;
+        }
+
+        .converter-controls {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        }
+
+        select {
+            background: #000; color: #00ffcc;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px; padding: 10px; font-size: 13px; outline: none;
+        }
+
+        .buttons { 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; 
+        }
+
+        input[type="button"] {
+            width: 100%; aspect-ratio: 1/1; border: none; border-radius: 15px;
+            background: rgba(255, 255, 255, 0.08); color: #fff;
+            font-size: 20px; cursor: pointer; transition: 0.2s;
+        }
+
+        input[type="button"]:active { transform: scale(0.9); }
+        .operator { color: #00ffcc; font-weight: 600; }
+        .clear { color: #ff5e5e; }
+        .equal { grid-column: span 2; aspect-ratio: auto !important; background: rgba(255,255,255,0.2) !important; }
+
+        .convert-btn { 
+            grid-column: span 4; height: 50px !important; aspect-ratio: auto !important;
+            background: linear-gradient(135deg, #00ffcc, #00aba9) !important;
+            color: #000 !important; font-weight: bold; font-size: 14px;
+        }
+
+        /* Copyright Footer */
+        .copyright {
+            text-align: center; color: rgba(255, 255, 255, 0.4);
+            font-size: 11px; margin-top: 10px; letter-spacing: 0.5px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator">
+        <form name="calc">
+            <div class="display">
+                <input type="text" id="screen" name="display" readonly placeholder="0">
+            </div>
+
+            <div class="converter-controls">
+                <select id="fromCurrency">
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="NGN">NGN</option>
+                    <option value="INR">INR</option>
+                    <option value="CAD">CAD</option>
+                </select>
+                <select id="toCurrency">
+                    <option value="NGN">NGN</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="INR">INR</option>
+                    <option value="CAD">CAD</option>
+                </select>
+            </div>
+
+            <div class="buttons">
+                <input type="button" value="AC" onclick="display.value = ''" class="clear">
+                <input type="button" value="DE" onclick="display.value = display.value.slice(0,-1)" class="operator">
+                <input type="button" value="%" onclick="display.value += '/100'" class="operator">
+                <input type="button" value="/" onclick="display.value += '/'" class="operator">
+                
+                <input type="button" value="7" onclick="display.value += '7'">
+                <input type="button" value="8" onclick="display.value += '8'">
+                <input type="button" value="9" onclick="display.value += '9'">
+                <input type="button" value="*" onclick="display.value += '*'" class="operator">
+                
+                <input type="button" value="4" onclick="display.value += '4'">
+                <input type="button" value="5" onclick="display.value += '5'">
+                <input type="button" value="6" onclick="display.value += '6'">
+                <input type="button" value="-" onclick="display.value += '-'" class="operator">
+                
+                <input type="button" value="1" onclick="display.value += '1'">
+                <input type="button" value="2" onclick="display.value += '2'">
+                <input type="button" value="3" onclick="display.value += '3'">
+                <input type="button" value="+" onclick="display.value += '+'" class="operator">
+                
+                <input type="button" value="0" onclick="display.value += '0'">
+                <input type="button" value="." onclick="display.value += '.'">
+                <input type="button" value="=" onclick="calculateResult()" class="equal">
+                
+                <input type="button" value="CONVERT CURRENCY" onclick="convertCurrency()" class="convert-btn">
+            </div>
+        </form>
+
+        <div class="copyright">
+            © 2026 Chimaxx Systems. All Rights Reserved.
+        </div>
+    </div>
+
+    <script>
+        function calculateResult() {
+            try {
+                let res = eval(document.getElementById('screen').value);
+                document.getElementById('screen').value = Number.isInteger(res) ? res : res.toFixed(2);
+            } catch (e) { document.getElementById('screen').value = "Error"; }
+        }
+
+        function convertCurrency() {
+            const screen = document.getElementById('screen');
+            const amount = parseFloat(screen.value);
+            if (isNaN(amount)) return;
+
+            const baseRates = { "USD": 1, "EUR": 0.92, "GBP": 0.79, "NGN": 1550, "INR": 83.3, "CAD": 1.36 };
+            const from = document.getElementById('fromCurrency').value;
+            const to = document.getElementById('toCurrency').value;
+
+            const result = (amount / baseRates[from]) * baseRates[to];
+            screen.value = result.toFixed(2);
+        }
+    </script>
+</body>
+</html>
